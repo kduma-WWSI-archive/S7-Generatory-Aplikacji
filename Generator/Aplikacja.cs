@@ -28,17 +28,17 @@ namespace Generator
 
             connection.Open();
 
-            var dataAdapter = new SqlDataAdapter("SELECT " + String.Join(", ", Konfiguracja.Columns) + " FROM " + Konfiguracja.Table, connection);
+            //var dataAdapter = new SqlDataAdapter("SELECT " + String.Join(", ", Konfiguracja.Columns) + " FROM " + Konfiguracja.Table, connection);
 
-            var commandBuilder = new SqlCommandBuilder(dataAdapter);
-            var ds = new DataSet();
-            dataAdapter.Fill(ds);
-            dataGridView1.ReadOnly = true;
-            dataGridView1.DataSource = ds.Tables[0];
+            //var commandBuilder = new SqlCommandBuilder(dataAdapter);
+            //var ds = new DataSet();
+            //dataAdapter.Fill(ds);
+            //dataGridView1.ReadOnly = true;
+            //dataGridView1.DataSource = ds.Tables[0];
 
-            label1.Text = Konfiguracja.ConnectionString;
-            Text += label2.Text = Konfiguracja.Table;
-            label3.Text = String.Join(", ", Konfiguracja.Columns); 
+            //label1.Text = Konfiguracja.ConnectionString;
+            //Text += label2.Text = Konfiguracja.Table;
+            //label3.Text = String.Join(", ", Konfiguracja.Columns); 
         }
     }
 }

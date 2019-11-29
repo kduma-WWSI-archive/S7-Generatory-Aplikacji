@@ -20,10 +20,13 @@ namespace Generator
 
         public string Tabela { get; set; }
 
+        public Konfiguracja Config { get; set; }
+
 
         public FormGenerator()
         {
             InitializeComponent();
+            Config = new Konfiguracja();
         }
 
         private void toolStripButton1_Click(object sender, EventArgs e)
@@ -43,14 +46,14 @@ namespace Generator
                         if(row[2].ToString() != "sysdiagrams")
                             listBoxTabele.Items.Add(row[2].ToString());
                     }
+
+                    Config.ConnectionString = ProcessConnectionString(connectionStringTextBox.Text);
                 }
                 catch (Exception exception)
                 {
                     MessageBox.Show("Error: "+exception.Message);
                     return;
                 }
-
-
             } else {
                 connection.Close();
                 listBoxTabele.Items.Clear();
@@ -77,8 +80,6 @@ namespace Generator
                 listBoxWybrane.Enabled = false;
                 ExportBTN.Enabled = false;
             }
-
-                
         }
 
         private static string ProcessConnectionString(string connectionString)
@@ -122,9 +123,6 @@ namespace Generator
             {
                 listBoxKolumny.Items.Add(rowColumn[3].ToString());
             }
-            listBoxWybrane.Items.Clear();
-            ExportBTN.Enabled = false;
-
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -143,35 +141,11 @@ namespace Generator
             if (filebox.ShowDialog() != DialogResult.OK)
                 return;
 
-
-            var name = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-            if (File.Exists(filebox.FileName))
-            {
-                File.Delete(filebox.FileName);
-            }
-            File.Copy(name, filebox.FileName);
-
-            using (StreamWriter sw = File.AppendText(filebox.FileName))
-            {
-                for(var i = 0; i < 20; i++)
-                    sw.Write("\n");
-                
-                sw.WriteLine("<<<<<<<<<<<<<<<<<<<<USERDATA>>>>>>>>>>>>>>>>>>>>");
-                
-                sw.Flush();
-                
-                var formatter = new XmlSerializer(typeof(Konfiguracja));
-
-                var konfiguracja = new Konfiguracja()
-                {
-                    ConnectionString = ProcessConnectionString(connectionStringTextBox.Text),
-                    Table = Tabela,
-                    Columns = listBoxWybrane.Items.Cast<String>().ToList()
-                };
-                formatter.Serialize(sw.BaseStream, konfiguracja);
-            }
-            
-
+            Exporter.MakeExe(
+                System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName, 
+                filebox.FileName, 
+                Config
+            );
 
             MessageBox.Show("Plik EXE został wygenerowany!");
         }
@@ -188,8 +162,39 @@ namespace Generator
             if (zaznaczony == null)
                 return;
 
-            listBoxWybrane.Items.Add(zaznaczony);
-            listBoxKolumny.Items.Remove(zaznaczony);
+            if(!Config.Columns.ContainsKey(Tabela))
+                Config.Columns.Add(Tabela, new Dictionary<string, string>());
+
+            if(!Config.Columns[Tabela].ContainsKey(zaznaczony))
+                Config.Columns[Tabela].Add(zaznaczony, null);
+
+            ReloadSelectedList();
+        }
+
+        private void ReloadSelectedList()
+        {
+            listBoxWybrane.Items.Clear();
+
+            foreach (var table in Config.Columns)
+            {
+                foreach (var column in table.Value)
+                {
+                    listBoxWybrane.Items.Add(
+                        column.Value == null
+                        ? $"{table.Key} -> {column.Key}"
+                        : $"{table.Key} -> {column.Key} -> {column.Value}"
+                    );
+                }
+            }
+
+            listBoxJoin.Items.Clear();
+            foreach (var j in Config.Joins)
+            {
+                listBoxJoin.Items.Add(
+                    $"{j.Key.Key}.{j.Key.Value} = {j.Value.Key}.{j.Value.Value}"
+                );
+            }
+
             ExportBTN.Enabled = true;
         }
 
@@ -200,16 +205,61 @@ namespace Generator
             if (zaznaczony == null)
                 return;
 
-            listBoxKolumny.Items.Add(zaznaczony);
-            listBoxWybrane.Items.Remove(zaznaczony);
+            WybranaOpcja = zaznaczony.Split(new string[] { " -> " }, StringSplitOptions.None);
 
-            if(listBoxWybrane.Items.Count == 0)
-                ExportBTN.Enabled = false;
+            agregujToolStripMenuItem.Checked = Config.Columns[WybranaOpcja[0]][WybranaOpcja[1]] != null;
+            contextMenuStrip1.Show(listBoxWybrane, e.X, e.Y);
         }
+
+        public string[] WybranaOpcja { get; set; }
 
         private void listBoxKolumny_SelectedIndexChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void listBoxWybrane_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void listBoxWybrane_MouseClick(object sender, EventArgs e)
+        {
+        }
+
+        private void listBoxWybrane_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Right)
+                return;
+        }
+
+        private void agregujToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Config.Columns[WybranaOpcja[0]][WybranaOpcja[1]] == null)
+                Config.Columns[WybranaOpcja[0]][WybranaOpcja[1]] = "sum";
+            else
+                Config.Columns[WybranaOpcja[0]][WybranaOpcja[1]] = null;
+
+            ReloadSelectedList();
+        }
+
+        private void ustawKluczToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var dialog = new ForeginKeyDialog(Config, WybranaOpcja[0], WybranaOpcja[1]);
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                ReloadSelectedList();
+            }
+        }
+
+        private void usuńToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Config.Columns[WybranaOpcja[0]].Remove(WybranaOpcja[1]);
+            if (Config.Columns[WybranaOpcja[0]].Count == 0)
+                Config.Columns.Remove(WybranaOpcja[0]);
+
+            ReloadSelectedList();
         }
     }
 }
