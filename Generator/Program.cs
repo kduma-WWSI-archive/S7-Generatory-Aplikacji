@@ -22,8 +22,8 @@ namespace Generator
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            using (StreamReader sr = File.OpenText("C:\\Users\\Krystian Duma\\Desktop\\test.exe"))
-            //using (StreamReader sr = File.OpenText(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName))
+            //using (StreamReader sr = File.OpenText("C:\\Users\\k_duma\\Desktop\\test.exe"))
+            using (StreamReader sr = File.OpenText(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName))
             {
                 string s = "";
                 bool user_content = false;

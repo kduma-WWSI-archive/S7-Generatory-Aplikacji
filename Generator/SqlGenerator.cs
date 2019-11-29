@@ -16,6 +16,9 @@ namespace Generator
             {
                 foreach (var column in table.Value)
                 {
+                    if (column.Key.StartsWith("Id") || column.Key.StartsWith("id"))
+                        continue;
+
                     if(column.Value != null)
                         columns.Add($"{column.Value}({table.Key}.{column.Key})");
                     else
@@ -41,7 +44,7 @@ namespace Generator
 
             if(joins.Count != 0)
                 sql += " WHERE " 
-                   + string.Join(", ", joins);
+                   + string.Join(" AND ", joins);
 
             return sql;
         }

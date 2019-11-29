@@ -39,8 +39,7 @@ namespace Generator
             dataGridView1.DataSource = ds.Tables[0];
 
             label1.Text = Konfiguracja.ConnectionString;
-            //Text += label2.Text = Konfiguracja.Table;
-            //label3.Text = String.Join(", ", Konfiguracja.Columns); 
+            label3.Text = _sql; 
         }
     }
 }
