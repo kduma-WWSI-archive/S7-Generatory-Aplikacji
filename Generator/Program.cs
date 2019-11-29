@@ -3,6 +3,7 @@ using System.Xml;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -21,8 +22,8 @@ namespace Generator
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            //using (StreamReader sr = File.OpenText("C:\\Users\\Krystian Duma\\Desktop\\test.exe"))
-            using (StreamReader sr = File.OpenText(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName))
+            using (StreamReader sr = File.OpenText("C:\\Users\\Krystian Duma\\Desktop\\test.exe"))
+            //using (StreamReader sr = File.OpenText(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName))
             {
                 string s = "";
                 bool user_content = false;
@@ -37,12 +38,21 @@ namespace Generator
 
                 if (user_content)
                 {
-                    var reader = XmlReader.Create(new StringReader(sr.ReadToEnd().Trim()));
-                    var formatter = new XmlSerializer(typeof(Konfiguracja));
-                    Konfiguracja konfiguracja = (Konfiguracja) formatter.Deserialize(reader);
+                    Konfiguracja konfiguracja;
+                    using (Stream stream = new MemoryStream())
+                    {
+                        byte[] data = System.Text.Encoding.UTF8.GetBytes(sr.ReadToEnd().Trim());
+                        stream.Write(data, 0, data.Length);
+                        stream.Position = 0;
+                        DataContractSerializer deserializer = new DataContractSerializer(typeof(Konfiguracja));
+                        konfiguracja = (Konfiguracja)deserializer.ReadObject(stream);
+
+                    }
 
 
-                    Application.Run(new Aplikacja(konfiguracja));
+                    var sql = SqlGenerator.From(konfiguracja);
+
+                    Application.Run(new Aplikacja(konfiguracja, sql));
                     return;
                 }
                 

@@ -69,6 +69,7 @@
     <Compile Include="Konfiguracja.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SqlGenerator.cs" />
     <EmbeddedResource Include="Aplikacja.resx">
       <DependentUpon>Aplikacja.cs</DependentUpon>
     </EmbeddedResource>
