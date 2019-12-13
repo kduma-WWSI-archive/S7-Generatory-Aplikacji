@@ -101,5 +101,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SqlGenerator\SqlGenerator.csproj">
+      <Project>{7ee114b6-3fec-4b0b-9701-de94be1b6afa}</Project>
+      <Name>SqlGenerator</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

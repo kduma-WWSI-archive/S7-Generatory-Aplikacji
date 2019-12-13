@@ -1,4 +1,9 @@
-﻿/.vs
+/.vs
 /.idea
 /Generator/bin
 /Generator/obj
+/packages
+/SqlGenerator/bin
+/SqlGenerator/obj
+/SqlGenerator.Tests/bin
+/SqlGenerator.Tests/obj
